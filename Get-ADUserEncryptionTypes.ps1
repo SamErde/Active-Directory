@@ -1,12 +1,17 @@
-<# Create comment based help to introduce the script.
+<#
+    .SYNOPSIS
     Find explicitly defined encryption types on your user accounts that are vulnerable to CVE-2022-37966: accounts where DES / RC4 is explicitly enabled but not AES.
+
+    .NOTES
+    This is a work in progress that I haven't finished, but I think does get pretty close to finding the important information.
     
     Need to review documentation to validate filters for desired results: 
     https://techcommunity.microsoft.com/t5/core-infrastructure-and-security/decrypting-the-selection-of-supported-kerberos-encryption-types/ba-p/1628797
     
     Inspiration: @debugprivilege and https://support.microsoft.com/en-us/topic/kb5021131-how-to-manage-the-kerberos-protocol-changes-related-to-cve-2022-37966-fd837ac3-cdec-4e76-a6ec-86e67501407d
 
-    Goal: find accounts using vulnerable or "less secure" encryption types, but don't depend on the ActiveDirectory module.
+    Primary Goal: Find accounts using vulnerable or "less secure" encryption types.
+    Secondary Goal: Try to accomplish this without depending on the ActiveDirectory module.
 #>
 
 $FilterVulnerableEncryptionTypes = '(&(objectClass=user)(msDS-supportedEncryptionTypes=7)(!(msDS-supportedEncryptionTypes=24)))'
@@ -37,10 +42,7 @@ $AllUsers = $Searcher.FindAll()
 
 $AllUsers | Group-Object msds-supportedencryptiontypes
 
-
-
-
-
+# ------------
 
 $UserEncryptionTypes = Get-ADUser -Properties msDS-SupportedEncryptionTypes,KerberosEncryptionType,CanonicalName -Filter *
 
@@ -49,4 +51,3 @@ $UserEncryptionTypes | Group-Object 'msDS-SupportedEncryptionTypes'
 $UserEncryptionTypes.Where({$_.'msDS-SupportedEncryptionTypes' -eq $null -or $_.'msDS-SupportedEncryptionTypes' -eq '0'}) | `
     Select-Object *,@{N="Path";E={ ((($_.CanonicalName).Split('/')) | Select-Object -SkipLast 1) -join '/' } } | `
         Group-Object Path -NoElement | Sort-Object Name | Format-Table Count,Name -AutoSize
-
