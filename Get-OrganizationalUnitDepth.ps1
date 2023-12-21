@@ -35,21 +35,17 @@ function Get-OrganizationalUnitDepth {
                 name is in its own segment, whereas DNs can have an unknown number of DC segments that represent the 
                 FQDN of the domain.
             
-            The depth groups are "named" by the depth value, so we rename the Name column to Depth.
+            "Name" isn't a helpful column heading for each depth group, so I change that to "Depth" with Select-Object.
         #>
-        # Create a summary of OU depths: 
         $OUDepths = $OUs | Group-Object { ([regex]::Matches($_.CanonicalName,'/')).Count } | 
             Select-Object @{Name="Depth"; Expression = {$_.Name}},@{Name="OU Count";Expression={$_.Count}},Group |
             Sort-Object Depth
 
         <# Get the Deepest OUs:
-            This script block pipes the full list of OUs to a Group-Object command...
-            They are grouped by a script block that counts the number of forward slashes in the CanonicalName...
-            The results of Group-Object contain the OU depth in the group 'Name' column, which we rename to "Depth"...
-            and the Group column contains the OUs at that depth...
-            Sorting by group Depth and selecting the last 1 gives us the group with the highest number (deepest OUs)...
-            The Tee-Object cmdlet cmdlet saves the depth for future reference...
-            and the final Select-Object statement pulls the OU objects from that grouped object.            
+
+            Select the last group from the sorted list to get the deepest OUs.
+            Use Tee-Object to drop the highest depth value into a variable while continuing the pipeline.
+            The final the final Select-Object statement pulls the OU objects from that grouped object.
         #>
         if ($Deepest) {
             # The downside to counting by commas in the DistinguishedName is you need to account for an unknown of DC segments in the domain name.
