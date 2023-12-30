@@ -28,6 +28,10 @@ function Test-IsMemberOfProtectedUsers {
     .NOTES
     Membership in Active Directory's Protect Users group can have implications for anything that relies on NTLM authentication.
 
+        To Do:
+      - The script does not pull Protected Users that are "members" by virtue of having their primary group set to 525 or any nested group within 525/PU.
+      - Make it work with multiple Active Directory domains in a forest.
+      - Add lookups for other well-known group SIDs.
 #>
 
     [CmdletBinding()]
