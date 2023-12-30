@@ -44,6 +44,7 @@ function Test-IsMemberOfProtectedUsers {
     # Use the currently logged in user if none is specified
     # Get the user from Active Directory
     if (-not($User)) {
+        # These two are different types. Fixed by referencing $CheckUser.SID later, but should fix here by using one type.
         $CurrentUser = ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name).Split('\')[-1]
         $CheckUser = Get-ADUser $CurrentUser
     }
@@ -59,7 +60,7 @@ function Test-IsMemberOfProtectedUsers {
     $ProtectedUsers = Get-ADGroupMember -Identity $ProtectedUsersSID -Recursive | Select-Object -Unique
 
     # Check if the current user is in the 'Protected Users' group
-    if ($ProtectedUsers -contains $CheckUser) {
+    if ($ProtectedUsers -contains $CheckUser.SID) {
         Write-Verbose "$($CheckUser.Name) ($($CheckUser.DistinguishedName)) is a member of the Protected Users group."
         $true
     } else {
