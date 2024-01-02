@@ -1,3 +1,17 @@
+<#
+    .SYNOPSIS
+    Plumb the depths of Active Directory organizational units to find the deepst.
+
+    .DESCRIPTION
+    Find the deepst OUs in Active Directory and summarize how many OUs are at each depth.
+
+    .LINK
+    https://social.technet.microsoft.com/wiki/contents/articles/5312.active-directory-characters-to-escape.aspx
+
+    .LINK
+    https://learn.microsoft.com/en-us/troubleshoot/windows-server/identity/naming-conventions-for-computer-domain-site-ou
+#>
+
 function Get-OrganizationalUnitDepth {
     [CmdletBinding()]
     [Alias("Get-OUDepth")]
