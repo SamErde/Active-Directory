@@ -28,6 +28,11 @@ function Test-IsMemberOfProtectedUsers {
     .NOTES
     Membership in Active Directory's Protect Users group can have implications for anything that relies on NTLM authentication.
 
+        To Do:
+          - The script does not pull Protected Users that are "members" by virtue of having their primary group set 
+            to 525 or any nested group within 525/Protected Users.
+          - Make it work with multiple Active Directory domains in a forest.
+          - Add lookups for other well-known group SIDs.
 #>
 
     [CmdletBinding()]
@@ -44,6 +49,7 @@ function Test-IsMemberOfProtectedUsers {
     # Use the currently logged in user if none is specified
     # Get the user from Active Directory
     if (-not($User)) {
+        # These two are different types. Fixed by referencing $CheckUser.SID later, but should fix here by using one type.
         $CurrentUser = ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name).Split('\')[-1]
         $CheckUser = Get-ADUser $CurrentUser
     }
@@ -59,7 +65,7 @@ function Test-IsMemberOfProtectedUsers {
     $ProtectedUsers = Get-ADGroupMember -Identity $ProtectedUsersSID -Recursive | Select-Object -Unique
 
     # Check if the current user is in the 'Protected Users' group
-    if ($ProtectedUsers -contains $CheckUser) {
+    if ($ProtectedUsers -contains $CheckUser.SID) {
         Write-Verbose "$($CheckUser.Name) ($($CheckUser.DistinguishedName)) is a member of the Protected Users group."
         $true
     } else {
