@@ -1,6 +1,7 @@
 <#
     .SYNOPSIS
     Run a complete set of DCDIAG tests on all DCs in the forest.
+
     .DESCRIPTION
     This script runs a standard set of DCDIAG tests against all DCs in the forest and saves the details to a time-stamped log file.
     It then lists all of the omitted tests that are noted in the log file and runs each one of those, saving a log file for each.
@@ -15,7 +16,7 @@
     DATE    : 2021/06/30
     VERSION : 1.0
     CONTACT :
-                https://github.com/SturdyErde
+                https://github.com/SamErde
                 https://twitter.com/SamErde
 #>
 

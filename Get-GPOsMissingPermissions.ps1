@@ -1,3 +1,12 @@
+<#
+    .SYNOPSIS
+    Find Group Policy Objects with Missing Permissions
+
+    .DESCRIPTION
+    A script that finds GPOs that are missing permissions for Authenticated Users OR Domain Controllers.
+    ...this must have been written before I found GPOZaurr!
+#>
+
 #Find Group Policies with Missing Permissions
 Function Get-GPOsMissingPermissions {
 
