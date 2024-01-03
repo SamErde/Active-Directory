@@ -1,5 +1,5 @@
 <#
-  The idea for this project was based a sample script provided by Trimarc at 
+  The idea for this script was based a sample script provided by Trimarc at 
   https://www.hub.trimarcsecurity.com/post/mitigating-exchange-permission-paths-to-domain-admins-in-active-directory.
   
   See also: https://www.hub.trimarcsecurity.com/post/securing-active-directory-performing-an-active-directory-security-review
