@@ -1,6 +1,6 @@
 ﻿Import-Module ActiveDirectory
-[Array] $ADDomainTrusts = (Get-ADObject -Filter {ObjectClass -eq "trustedDomain"}).Name
-[Array]$NetBIOSDomainNames = @()
+[array]$ADDomainTrusts = (Get-ADObject -Filter {ObjectClass -eq "trustedDomain"}).Name
+[array]$NetBIOSDomainNames = @()
 
 foreach ($trust in $ADDomainTrusts)
 {
@@ -10,19 +10,12 @@ foreach ($trust in $ADDomainTrusts)
 
 $NetBIOSDomainNames
 
+<# Or using this:
+  $TrustedDomains = @{}           
+  $TrustedDomains += Get-ADObject -Filter {ObjectClass -eq "trustedDomain"} -Properties * |
+      Select-Object @{ Name = 'NetBIOSName'; Expr = { $_.FlatName } },@{ Name = 'DNSName'; Expr = { $_.Name } },$TrustedDomains
 
-# http://blogs.metcorpconsulting.com/tech/?p=313
-
-<# ***** OR *****
-$TrustedDomains = @{}           
-$TrustedDomains += Get-ADObject -Filter {ObjectClass -eq "trustedDomain"} -Properties * |
-    Select @{ Name = 'NetBIOSName'; Expr = { $_.FlatName } },
-           @{ Name = 'DNSName'; Expr = { $_.Name } },
-$TrustedDomains
-
-#Foreach ($Domain in $TrustedDomains) 
-{
-    
-    @{ Name = 'Server'; Expr = { (Get-ADDomainController -Discover -ForceDiscover -Writable -Service ADWS -DomainName $_.Name).Hostname[0] } }
-}
+  #foreach ($Domain in $TrustedDomains) {
+  #  @{ Name = 'Server'; Expr = { (Get-ADDomainController -Discover -ForceDiscover -Writable -Service ADWS -DomainName $_.Name).Hostname[0] } }
+  #}
 #>
