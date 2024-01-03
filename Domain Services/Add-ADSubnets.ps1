@@ -66,7 +66,7 @@ if (!(Test-Path $InputCSV))
  
 #Check for the existance of the Active Directory Module 
 If(!(Get-Module -ListAvailable | Where-Object {$_.name -eq 'ActiveDirectory'}))  
-        { “The Active Directory module is not installed on this system.” ; Sleep 5 ;exit } 
+        { "The Active Directory module is not installed on this system." ; Sleep 5 ;exit } 
  
 #Import the Active Directory Module 
 Import-Module ActiveDirectory 

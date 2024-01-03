@@ -22,7 +22,7 @@ function Get-NameForGUID{
             { $ForestDNSName = (Get-ADForest $ForestDNSName).Name }
     
             IF ($ForestDNSName -notlike "*=*")
-             { $ForestDNSNameDN = “DC=$($ForestDNSName.replace(“.”, “,DC=”))” }
+             { $ForestDNSNameDN = "DC=$($ForestDNSName.replace('.', ',DC='))" }
     
                 $ExtendedRightGUIDs = "LDAP://cn=Extended-Rights,cn=configuration,$ForestDNSNameDN"
                 $PropertyGUIDs = "LDAP://cn=schema,cn=configuration,$ForestDNSNameDN"
