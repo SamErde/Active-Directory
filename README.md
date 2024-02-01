@@ -14,6 +14,10 @@ I will try to keep track of actively maintained scripts below:
 
 [Get-GPOsMissingPermissions.ps1](./Get-GPOsMissingPermissions.ps1): A tool to help find GPOs that are missing permissions for either Authenticated Users or Domain Computers.
 
+## Get-OrganizationalUnitDepth
+
+[Get-OrganizationalUnitDepth.ps1](./Get-OrganizationalUnitDepth.ps1): A tool to report the deepest levels of OUs in your Active Directory hierarchy so you can audit and plan for a simpler structure.
+
 ## Test-IsProtectedUser
 
 [Test-IsProtectedUser](./Test-IsProtectedUser.ps1): A tool to check if a user is a member of the Protected Users group in Active Directory.
