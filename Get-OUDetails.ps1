@@ -1,17 +1,14 @@
 function Get-OUDetails {
-<#
-.SYNOPSIS
-    Get advanced details about an organizational unit (OU) in Active Directory.
-.DESCRIPTION
-    THIS IS STILL A CONCEPT WORK IN PROGRESS
-#>
+    <#
+    .SYNOPSIS
+        Get advanced details about an organizational unit (OU) in Active Directory.
+    .DESCRIPTION
+        THIS IS STILL A CONCEPT WORK IN PROGRESS
+    #>
     Import-Module ActiveDirectory
 
     $OUs = Get-ADOrganizationalUnit -Filter * -Properties CanonicalName, gPOptions, isCriticalSystemObject, showInAdvancedViewOnly | Sort-Object CanonicalName
     foreach ($OU in $OUs) {
-
-        $CriticalLocation = if ($OU.isCriticalSystemObject) { $true } else { $false }
-        $HiddenOU = if ($OU.showInAdvancedViewOnly) { $true } else { $false }
 
         [array]$OUDetails += [PSCustomObject]@{
             Name                    = $OU.Name
@@ -20,12 +17,12 @@ function Get-OUDetails {
             Parent                  = Get-ParentOU $OU
             Child                   = Get-ChildOU $OU
             BlockInheritance        = Test-BlockInheritence $OU
-            CriticalLocation        = $CriticalLocation
-            ShowInAdvancedViewOnly  = $HiddenOU
+            CriticalLocation        = Test-IsCriticalSystemObject $OU
+            ShowInAdvancedViewOnly  = Test-IsHiddenOU $OU
         }
     }
 
-    # Return the OUFamily array as the result of this function
+    # Return the OUDetails array as the result of this function
     $OUDetails
 }
 
@@ -36,6 +33,7 @@ function Get-ParentOU {
         [Parameter()]
         $OrganizationalUnit
     )
+
     $DN = $OrganizationalUnit.DistinguishedName
     $ParentDN = ($DN.Replace("OU=$($OrganizationalUnit.Name),",''))
 
@@ -55,6 +53,7 @@ function Get-ChildOU {
         [Parameter()]
         $OrganizationalUnit
     )
+
     $DN = $OrganizationalUnit.DistinguishedName
     $ChildOU = [array](Get-ADOrganizationalUnit -Filter * -SearchBase $DN -SearchScope OneLevel -Properties CanonicalName)
 
@@ -70,6 +69,36 @@ function Test-BlockInheritence {
     )
 
     if ($OU.gPOptions -eq 1) {
+        $true
+    } else {
+        $false
+    }
+}
+
+function Test-IsCriticalSystemObject {
+    # Check if the OU is flagged as a critical system object, which indicates that it is a default location for new AD objects.
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        $OrganizationalUnit
+    )
+
+    if ($OrganizationalUnit.isCriticalSystemObject) {
+        $true
+    } else {
+        $false
+    }
+}
+
+function Test-IsHiddenOU {
+    # Check if the OU is shown in advanced view only, and hidden from the standard view in ADUC.
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        $OrganizationalUnit
+    )
+
+    if ($OrganizationalUnit.showInAdvancedViewOnly) {
         $true
     } else {
         $false
