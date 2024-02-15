@@ -4,6 +4,11 @@ function Get-OUDetails {
         Get advanced details about an organizational unit (OU) in Active Directory.
     .DESCRIPTION
         THIS IS STILL A CONCEPT WORK IN PROGRESS
+    
+    .NOTES
+        The Test-BlockInheritence, Test-IsCriticalSystemObject, and Test-IsHiddenOU functions were all created because
+        I would rather display an explicit value (eg: $false) than a null that implies $false. Likewise, I prefer to
+        display a $true or $false rather than 1 or a 0.
     #>
     Import-Module ActiveDirectory
 
