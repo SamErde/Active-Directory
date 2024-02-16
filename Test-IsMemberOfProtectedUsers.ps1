@@ -27,6 +27,10 @@ function Test-IsMemberOfProtectedUsers {
             True, False
 
         .NOTES
+            Author:     Sam Erde (https://linktr.ee/SamErde)
+            Modified:   2024-02-16
+            Version:    0.1.0
+            
             Membership in Active Directory's Protect Users group can have implications for anything that relies on NTLM authentication.
 
             To Do:
