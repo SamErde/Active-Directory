@@ -5,6 +5,7 @@ function Test-IsMemberOfProtectedUsers {
 
     .DESCRIPTION
     This function checks to see if a specified user or the current user is a member of the Protected Users group in AD.
+    It also checked the user's primary group ID in case that is set to 525 (Protected Users).
 
     .PARAMETER User
     The user that will be checked for membership in the Protected Users group. This parameter accepts input from the pipeline.
@@ -23,16 +24,13 @@ function Test-IsMemberOfProtectedUsers {
     Active Directory user object, user SID, SamAccountName, etc
 
     .OUTPUTS
-    Boolean
+    True, False
 
     .NOTES
     Membership in Active Directory's Protect Users group can have implications for anything that relies on NTLM authentication.
 
         To Do:
-          - The script does not pull Protected Users that are "members" by virtue of having their primary group set 
-            to 525 or any nested group within 525/Protected Users.
           - Make it work with multiple Active Directory domains in a forest.
-          - Add lookups for other well-known group SIDs.
 #>
 
     [CmdletBinding()]
@@ -51,10 +49,10 @@ function Test-IsMemberOfProtectedUsers {
     if (-not($User)) {
         # These two are different types. Fixed by referencing $CheckUser.SID later, but should fix here by using one type.
         $CurrentUser = ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name).Split('\')[-1]
-        $CheckUser = Get-ADUser $CurrentUser
+        $CheckUser = Get-ADUser $CurrentUser -Properties primaryGroupID
     }
     else {
-        $CheckUser = Get-ADUser $User
+        $CheckUser = Get-ADUser $User -Properties primaryGroupID
     }
 
     # Get the Protected Users group by SID instead of by its name to ensure compatibility with any locale or language.
@@ -69,7 +67,12 @@ function Test-IsMemberOfProtectedUsers {
         Write-Verbose "$($CheckUser.Name) ($($CheckUser.DistinguishedName)) is a member of the Protected Users group."
         $true
     } else {
-        Write-Verbose "$($CheckUser.Name) ($($CheckUser.DistinguishedName)) is not a member of the Protected Users group."
-        $false
+        # Check if the user's PGID (primary group ID) is set to the Protected Users group RID (525).
+        if ( $CheckUser.primaryGroupID -eq '525' ) {
+            $true
+        } else {
+            Write-Verbose "$($CheckUser.Name) ($($CheckUser.DistinguishedName)) is not a member of the Protected Users group."
+            $false
+        }
     }
 }
