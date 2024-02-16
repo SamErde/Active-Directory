@@ -65,7 +65,7 @@ function Test-IsMemberOfProtectedUsers {
     $ProtectedUsers = Get-ADGroupMember -Identity $ProtectedUsersSID -Recursive | Select-Object -Unique
 
     # Check if the current user is in the 'Protected Users' group
-    if ($ProtectedUsers -contains $CheckUser.SID) {
+    if ($ProtectedUsers.SID.Value -contains $CheckUser.SID) {
         Write-Verbose "$($CheckUser.Name) ($($CheckUser.DistinguishedName)) is a member of the Protected Users group."
         $true
     } else {
