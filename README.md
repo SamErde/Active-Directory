@@ -18,6 +18,6 @@ I will try to keep track of actively maintained scripts below:
 
 [Get-OrganizationalUnitDepth.ps1](./Get-OrganizationalUnitDepth.ps1): A tool to report the deepest levels of OUs in your Active Directory hierarchy so you can audit and plan for a simpler structure.
 
-## Test-IsProtectedUser
+## Test-IsMemberOfProtectedUsers
 
-[Test-IsProtectedUser](./Test-IsProtectedUser.ps1): A tool to check if a user is a member of the Protected Users group in Active Directory.
+[Test-IsMemberOfProtectedUsers](./Test-IsMemberOfProtectedUsers.ps1): A tool to check if a user is a member of the Protected Users group in Active Directory.
