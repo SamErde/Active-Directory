@@ -31,6 +31,8 @@ function Get-OrganizationalUnitDepth {
     
     begin {
         Import-Module ActiveDirectory
+
+        # if ((-not($Deepest)) -and (-not($Summary))) { $Summary = $true }
     }
     
     process {
