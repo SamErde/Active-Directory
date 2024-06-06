@@ -31,7 +31,7 @@ function Rename-GPOsByCSV {
         [string]$GpoCsvPath,
 
         [Parameter(Mandatory = $false)]
-        [int]$BatchSize = 20,
+        [int]$BatchSize = 25,
 
         [Parameter(Mandatory = $false)]
         $Delay = (New-TimeSpan -Minutes 15).TotalSeconds
@@ -61,7 +61,7 @@ function Rename-GPOsByCSV {
                 # Check if -WhatIf parameter is specified
                 if ($PSCmdlet.ShouldProcess("Rename GPO '$($gpo.OldName)' to '$($gpo.NewName)'")) {
                     # Rename the GPO and suppress the host output
-                    Rename-GPO -GPO $OldGpo -NewName $gpo.NewName | Out-Null
+                    Rename-GPO -Name $OldGpo -TargetName $gpo.NewName | Out-Null
                     Write-Output "[Rename-GPOsByCSV] $(Get-Date) [Success] Renamed GPO '$($gpo.OldName)' to '$($gpo.NewName)'."
                 }
             }
