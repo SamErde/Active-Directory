@@ -22,6 +22,13 @@ function Rename-GPOsByCSV {
 
         Renames the GPOs listed in the CSV file 'C:\Path\To\GPO Renaming List.csv' in batches of 25
         with a delay of 1800 seconds (30 minutes) between each batch.
+
+        .NOTES
+        [ ] Add logging
+        [ ] Automatically rename security filtering groups applied to affected GPOs
+            [ ] Rename if they begin with "GPO*"
+            [ ] Log without renaming if the group name does not begin with "GPO*"
+            [ ] Ignore groups with "Phase" in the name
     #>
 
 
