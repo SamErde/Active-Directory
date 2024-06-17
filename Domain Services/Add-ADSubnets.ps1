@@ -58,21 +58,21 @@ Clear-Host
  
 #Verify PowerShell Version 2 
 if ($Host.Version.Major -lt 2) 
-    {Write-Host "Wrong Version of Powershell, Exiting now..."; Sleep 5 ; Exit} 
+    {Write-Host "Wrong Version of Powershell, Exiting now..."; Start-Sleep5 ; Exit} 
  
 #Verfiy the path to the Input CSV file 
 if (!(Test-Path $InputCSV)) 
-    {Write-Host "Your Input CSV does not exist, Exiting..." ; Sleep 5 ; Exit} 
+    {Write-Host "Your Input CSV does not exist, Exiting..." ; Start-Sleep5 ; Exit} 
  
 #Check for the existance of the Active Directory Module 
 If(!(Get-Module -ListAvailable | Where-Object {$_.name -eq 'ActiveDirectory'}))  
-        { "The Active Directory module is not installed on this system." ; Sleep 5 ;exit } 
+        {Write-Host "The Active Directory module is not installed on this system." ; Start-Sleep5 ;exit } 
  
 #Import the Active Directory Module 
 Import-Module ActiveDirectory 
  
 #List the Current Domain that the script is using. 
-Write-host "The current Domain Contoller is" (Get-ADDomainController).HostName -BackgroundColor Yellow -ForegroundColor Black 
+Write-host "The current Domain Contoller is $((Get-ADDomainController).HostName)" -BackgroundColor Yellow -ForegroundColor Black 
  
 If ($NewLog -eq 'Y') 
     { 
@@ -116,7 +116,7 @@ function Test-XADObject()
                 return $false 
             } 
         $auxObject = Get-ADObject -Identity $Identity  
-        return ($auxObject -ne $Null) 
+        return ($Null -ne $auxObject) 
     } 
  
 #Create the funtion to test existance of the sites for error checking. 
@@ -135,7 +135,7 @@ function Test-XADSite()
                 return $false 
             } 
         $auxObject = Get-ADObject -Filter 'ObjectClass -eq "site"' -SearchBase $ConfigurationDN| Where-Object {$_.Name -eq $Identity} 
-        return ($auxObject -ne $Null) 
+        return ($Null -ne $auxObject) 
     } 
  
 #null out i 
@@ -152,7 +152,7 @@ $i++
  
     If (!(Test-XADSite -Identity $SB.Sitename)) 
     { 
-    Write-Host 'Site' $SB.Sitename 'Does Not Exist, Please create Sites before Subnets.' -BackgroundColor Red -ForegroundColor White  
+    Write-Host "Site $($SB.Sitename) Does Not Exist, Please create Sites before Subnets." -BackgroundColor Red -ForegroundColor White  
     } 
     Else 
     { 
@@ -178,7 +178,7 @@ $i++
             If (Test-XADObject -Identity $newSubnetDN) 
                 { 
                     #Update the console 
-                    Write-Host "Created & Verified Subnet:" $SB.subnetname 
+                    Write-Host "Created & Verified Subnet: $($SB.subnetname)"
                     #Update the log file 
                     Add-Content -Path $Logfile -Value "$($SB.subnetname),Created and Verified" 
                 } 
@@ -187,7 +187,7 @@ $i++
             Else 
                 { 
                 #Update the Console 
-                Write-Host "Created but not Verified Subnet:" $SB.subnetname 
+                Write-Host "Created but not Verified Subnet: $($SB.subnetname)"
                 #Update the log file 
                 Add-Content -Path $Logfile -Value "$($SB.subnetname),Created but not Verified " 
                 } 
@@ -197,7 +197,7 @@ $i++
         #Make note that the subnet already existed. 
         Else { 
             #Update the Console 
-            Write-Host "Subnet" $SB.subnetname "already exists. Skipping this subnet" -BackgroundColor Red -ForegroundColor White 
+            Write-Host "Subnet $($SB.subnetname) already exists. Skipping this subnet" -BackgroundColor Red -ForegroundColor White 
             #Update the log file. 
             Add-Content -Path $Logfile -Value "$($SB.subnetname),PreExisting" 
              } 
