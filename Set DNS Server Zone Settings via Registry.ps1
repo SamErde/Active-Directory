@@ -41,11 +41,11 @@ foreach ($srv in $servers) {
     $server = $srv.Hostname
     $session = New-PSSession -ComputerName $server -Name $server -Credential $creds
     Try { 
-        Write-Host -ForegroundColor Green "Connecting to $server... " -NoNewline
+        Write-Host "Connecting to $server... " -ForegroundColor Green -NoNewline
         Enter-PSSession $session 
     } 
     Catch { 
-        Write-Host -ForegroundColor DarkYellow "Failed to enter the PSSession for $server. Skipping."
+        Write-Host "Failed to enter the PSSession for $server. Skipping." -ForegroundColor DarkYellow
         Continue 
     }
     Write-Output $session.State
@@ -53,9 +53,9 @@ foreach ($srv in $servers) {
     $zones = Get-ChildItem -Path 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\DNS Server\Zones\'
 
         foreach ($zone in $zones) {
-            Write-Host -NoNewline -ForegroundColor Yellow `n`n "Name: " (Get-ItemProperty -PSPath $zone.PSPath).PSChildName
-            Write-Host -NoNewline `n "SecondaryServers: " (Get-ItemProperty -PSPath $zone.PSPath).SecondaryServers
-            Write-Host -NoNewline `n "SecureSecondaries: " (Get-ItemProperty -PSPath $zone.PSPath).SecureSecondaries `n
+            Write-Host "`n`nName: $((Get-ItemProperty -PSPath $zone.PSPath).PSChildName)" -NoNewline -ForegroundColor Yellow
+            Write-Host "`nSecondaryServers: $((Get-ItemProperty -PSPath $zone.PSPath).SecondaryServers)" -NoNewline 
+            Write-Host "`nSecureSecondaries: $((Get-ItemProperty -PSPath $zone.PSPath).SecureSecondaries) `n" -NoNewline 
 
             #Set-ItemProperty -PSPath $zone.PSPath -Name "SecondaryServers" -Value "" -Whatif
             #Set-ItemProperty -PSPath $zone.PSPath -Name "SecureSecondaries" -Value "3" -Whatif
@@ -65,6 +65,6 @@ foreach ($srv in $servers) {
     #Cleanup and then show the current PSSession state.
     if ($session) { Exit-PSSession }
     if ($session) { Remove-PSSession $session }
-    Write-Host -ForegroundColor DarkYellow $session.ComputerName $session.State `n`n -NoNewline
+    Write-Host "$($session.ComputerName) $($session.State) `n`n" -NoNewline
 
 }
