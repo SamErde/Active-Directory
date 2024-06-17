@@ -38,6 +38,7 @@ function Test-IsMemberOfProtectedUsers {
     #>
 
     [CmdletBinding()]
+    [OutputType([System.Boolean])]
     param (
         # User parameter accepts any input that is valid for Get-ADUser
         [Parameter(
