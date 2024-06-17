@@ -11,8 +11,9 @@ $ObjectTypeGUID[[GUID]'00299570-246d-11d0-a768-00aa006e0529']
 
 
 function Get-NameForGUID{
-    # From http://blog.wobl.it/2016/04/active-directory-guid-to-friendly-name-using-just-powershell/
+    # Portions from http://blog.wobl.it/2016/04/active-directory-guid-to-friendly-name-using-just-powershell/
         [CmdletBinding()]
+        [OutputType([System.String])]
         Param(
             [guid]$guid,
             [string]$ForestDNSName
