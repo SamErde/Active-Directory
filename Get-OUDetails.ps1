@@ -10,6 +10,11 @@ function Get-OUDetails {
         I would rather display an explicit value (eg: $false) than a null that implies $false. Likewise, I prefer to
         display a $true or $false rather than 1 or a 0.
     #>
+    [CmdletBinding()]
+    [OutputType([Array])]
+    param (
+    )
+    
     Import-Module ActiveDirectory
 
     $OUs = Get-ADOrganizationalUnit -Filter * -Properties CanonicalName, gPOptions, isCriticalSystemObject, showInAdvancedViewOnly | Sort-Object CanonicalName
@@ -54,6 +59,7 @@ function Get-ParentOU {
 function Get-ChildOU {
     # List the child OUs for an organizational unit in Active Directory
     [CmdletBinding()]
+    [OutputType([Array])]
     param (
         [Parameter()]
         $OrganizationalUnit
@@ -68,6 +74,7 @@ function Get-ChildOU {
 function Test-BlockInheritence {
     # Check if Block Inheritence is set on an organizational unit in Active Directory
     [CmdletBinding()]
+    [OutputType([Boolean])]
     param (
         [Parameter()]
         $OrganizationalUnit
