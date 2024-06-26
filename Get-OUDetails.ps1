@@ -90,6 +90,7 @@ function Test-BlockInheritence {
 function Test-IsCriticalSystemObject {
     # Check if the OU is flagged as a critical system object, which indicates that it is a default location for new AD objects.
     [CmdletBinding()]
+    [OutputType([Boolean])]
     param (
         [Parameter()]
         $OrganizationalUnit
@@ -105,6 +106,7 @@ function Test-IsCriticalSystemObject {
 function Test-IsHiddenOU {
     # Check if the OU is shown in advanced view only, and hidden from the standard view in ADUC.
     [CmdletBinding()]
+    [OutputType([Boolean])]
     param (
         [Parameter()]
         $OrganizationalUnit
