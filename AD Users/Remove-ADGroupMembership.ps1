@@ -1,16 +1,20 @@
 function Remove-AllADGroupMembership {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
     param (
         [Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
-        [string]$SAMAccountName
+        $User
     )
     begin {
 
     }
     process {
-        $User = Get-ADUser $SAMAccountName -Properties memberof
-        $User.memberof | ForEach-Object {
-            Get-ADGroup $_ | Remove-ADGroupMember -Member $SAMAccountName
+        $UserObject = Get-ADUser $User -Properties memberof
+        $SamAccountName = $UserObject.$SamAccountName
+        $UserObject.memberof | ForEach-Object {
+            # Implement ShouldProcess to support -WhatIf and -Confirm
+            if ($PSCmdlet.ShouldProcess($UserObject)) {
+                Get-ADGroup $_ | Remove-ADGroupMember -Member $SamAccountName
+            }
         }
     }
     end {
