@@ -61,7 +61,7 @@ function Rename-GPOsByCSV {
         $LogStringBuilder = [System.Text.StringBuilder]::New()
 
         Write-Log "Renaming Group Policy Objects from $GpoCsvPath"
-        "Write-Log $StartTime `n"
+        Write-Log "$StartTime `n"
 
         Import-Module GroupPolicy
     } # end begin block
