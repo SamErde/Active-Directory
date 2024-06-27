@@ -101,57 +101,66 @@ function Rename-GpoSecurityGroups {
             Write-Verbose "Checking all GPOs."
             $GPOs = Get-GPO -All
         }
+        $GpoCount = $Gpos.Count
 
-        Write-Log -LogText "`nInspecting $($GPOs.Count) GPOs.`n" -Output Both
-    }
+        Write-Log -LogText "`nInspecting $GpoCount GPOs.`n" -Output Both
+    } # end begin block
 
     process {
 
+        [System.Collections.ArrayList]$GroupsToRename = @()
+
         # Loop through all GPOs to inspect ACEs with the GpoApply permission.
         foreach ($gpo in $GPOs) {
+            $GpoName = $gpo.DisplayName
+
             [array]$GpoApply = $gpo | Get-GPPermission -All -TargetType Group | Where-Object {
                     $_.Permission -eq 'GpoApply' -and
                     $_.Trustee.SidType -eq 'Group'
                 }
-            # Check the group names if any are found with GpoApply permission.
-            if ($GpoApply) {
-
-                foreach ($ace in $GpoApply) {
-
-                    # Ignore any group names that include words from the IgnoreWords list.
-                    if ( $null -eq ($IgnoreWords | Where-Object { $($GpoApply.Trustee.Name) -match $_ }) ) {
-
-                        $GpoName = $gpo.DisplayName
-                        $GroupName = $ace.Trustee.Name
-
-                        if ($GroupName -eq "GPO.$GpoName") {
-                            # The group name matches the GPO name.
-                        } else {
-                            Write-Host "The group name does not match the GPO name:" -ForegroundColor Yellow -BackgroundColor Black
-                            Write-Host "$($gpo.DisplayName)" -NoNewline
-                            Write-Host "`t $($GpoApply.Trustee.Name)`n"
-                            $Group = Get-ADGroup $GroupName
-                            $NewGroupName = "GPO.$GpoName"
-                            Set-ADGroup -WhatIf -Identity $Group -DisplayName $NewGroupName -SamAccountName $NewGroupName
-                        }
-
-                    } # end if no IgnoreWords in name
-                } #end foreach ace
-
-            } else {
+            
+            if (-not $GpoApply) {
+                # Security filtering is not used.
+                Write-Log -LogText "$(Get-Date) [Skipped] `'$GpoName`' does not use security group filtering." -Output LogOnly
                 Continue
-            } #end if GpoApply
-        } # end foreach gpo
+            }
 
+            foreach ($ace in $GpoApply) {
+                $GroupName = $ace.Trustee.Name
+                
+                if ( $IgnoreWords | Where-Object { $GroupName -match $_ } ) {
+                    # Security filtering groups include an ignored word in the name.
+                    Write-Log -LogText "$(Get-Date) [Ignored] `'$GpoName`' security filtering group `'$GroupName`' includes an ignored word in the name." -Output Both
+                    Continue
+                }
+                if ($GroupName -eq "GPO.$GpoName") {
+                    # The group name matches the GPO name.
+                    Write-Log -LogText "$(Get-Date) [Matched] `'$GpoName`' security filtering group `'$GroupName`' matches." -Output LogOnly
+                    Continue
+                }
+
+                $NewGroupName = "GPO.$GpoName"
+                $GroupsToRename.Add([PSCustomObject]@{
+                    GPO = $GpoName
+                    GroupName = $GroupName
+                    NewGroupName = $NewGroupName
+                }) | Out-Null
+
+                Write-Log -LogText "$(Get-Date) [Mismatch] $GpoName`n`t`tGroup: $GroupName`n`t`tNew Group: $NewGroupName" -Output Both
+                #$Group = Get-ADGroup $GroupName
+                #Set-ADGroup -WhatIf -Identity $Group -DisplayName $NewGroupName -SamAccountName $NewGroupName
+            } #end foreach ace
+        } # end foreach gpo
     } # end process block
 
     end {
         # Write the log file
         $FinishTime = Get-Date
-        Write-Log "`n`nFinished at $FinishTime.`n"
+        Write-Log "`n`nFinished reviewing $GpoCount at $FinishTime." -Output Both
+        Write-Log "There are $($GroupsToRename.Count) groups to review and rename." -Output Both
         try {
             $LogStringBuilder.ToString() | Out-File -FilePath $LogFile -Encoding utf8 -Force
-            Write-Output "The log file has been written to $LogFile."
+            Write-Output "`nThe log file has been written to `'$LogFile`'."
         } catch {
             Write-Warning -Message "Unable to write to the logfile `'$LogFile`'."
             $_
