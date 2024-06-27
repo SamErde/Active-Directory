@@ -25,6 +25,11 @@ function Rename-GPOsByCSV {
 
         Renames the GPOs listed in the CSV file 'C:\Path\To\GPO Renaming List.csv' in batches of 25
         with a delay of 1800 seconds (30 minutes) between each batch.
+
+        .NOTES
+        Author: Sam Erde
+        Version: 0.1.0
+        Modified: 2024-06-27
     #>
 
     [CmdletBinding( SupportsShouldProcess, ConfirmImpact = 'High' )]
@@ -55,11 +60,11 @@ function Rename-GPOsByCSV {
         # Start the log string builder.
         $LogStringBuilder = [System.Text.StringBuilder]::New()
 
-        Write-Log "Renaming Group Policy Objects from a CSV"
+        Write-Log "Renaming Group Policy Objects from $GpoCsvPath"
         "Write-Log $StartTime `n"
 
         Import-Module GroupPolicy
-    }
+    } # end begin block
 
     process {
 
@@ -67,6 +72,9 @@ function Rename-GPOsByCSV {
             # Import the list of GPOs to rename from a CSV file that contains values in two columns: OldName and NewName
             $GPOs = Import-Csv -Path $GpoCsvPath | Where-Object { $null -ne $_.OldName -and $null -ne $_.NewName }
             $GpoCount = $GPOs.Count
+            if ($GpoCount -lt $BatchSize) {
+                $BatchSize = $GpoCount
+            }
         } catch {
             Write-Log -LogText "Failed to import the GPO renaming list: $_" -Output Both
             break
@@ -82,13 +90,17 @@ function Rename-GPOsByCSV {
             foreach ($gpo in $Batch) {
                 try {
                     # Get the old GPO and rename it:
-                    $OldGpo = (Get-GPO -Name $gpo.OldName).DisplayName
+                    $OldGpo = (Get-GPO -Name $gpo.OldName -ErrorAction Stop).DisplayName
 
                     # Check if -WhatIf parameter is specified
-                    if ($PSCmdlet.ShouldProcess("Rename GPO '$($gpo.OldName)' to '$($gpo.NewName)'")) {
+                    $Target = "$($gpo.OldName)"
+                    $Operation = "Rename to '$($gpo.NewName)'"
+                    if ($PSCmdlet.ShouldProcess($Target, $Operation)) {
                         # Rename the GPO and suppress the host output
                         Rename-GPO -Name $OldGpo -TargetName $gpo.NewName | Out-Null
-                        Write-Log -LogText "$(Get-Date) [Success] Renamed GPO '$($gpo.OldName)' to '$($gpo.NewName)'." -Output Both
+                        Write-Log -LogText "$(Get-Date) [Success] Renamed GPO '$Target' to '$($gpo.NewName)'." -Output Both
+                    } else {
+                        Write-Log -LogText "$(Get-Date) [Skipped] $Target" -Output Both
                     }
                 }
                 catch {
@@ -116,7 +128,6 @@ function Rename-GPOsByCSV {
             $_
         }
     } # end end block
-
 } # end function Rename-GPOsByCsv
 
 function Write-Log {
@@ -137,16 +148,16 @@ function Write-Log {
             $Output = 'Both'
         )
 
-        switch ($Output) {
-            Both {
-                Write-Host "$LogText"
-                [void]$LogStringBuilder.AppendLine($LogText)
-            }
-            HostOnly {
-                Write-Host "$LogText"
-            }
-            LogOnly {
-                [void]$LogStringBuilder.AppendLine($LogText)
-            }
+    switch ($Output) {
+        Both {
+            Write-Host "$LogText"
+            [void]$LogStringBuilder.AppendLine($LogText)
         }
+        HostOnly {
+            Write-Host "$LogText"
+        }
+        LogOnly {
+            [void]$LogStringBuilder.AppendLine($LogText)
+        }
+    } # end switch Output
 } # end function Write-Log
