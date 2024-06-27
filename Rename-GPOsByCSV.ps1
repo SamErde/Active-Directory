@@ -69,7 +69,7 @@ function Rename-GPOsByCSV {
             $GpoCount = $GPOs.Count
         } catch {
             Write-Host "Failed to import the GPO renaming list: $_"
-            return
+            break
         }
 
         # Loop through the GPOs in batches
@@ -77,6 +77,7 @@ function Rename-GPOsByCSV {
             # Get the current batch of GPOs
             $Batch = $GPOs[$i..($i + $BatchSize - 1)]
 
+            Write-Log -LogText "Looping through $GpoCount GPOs in batches of $BatchSize." -Output Both
             # Rename each GPO in the batch
             foreach ($gpo in $Batch) {
                 try {
@@ -87,16 +88,17 @@ function Rename-GPOsByCSV {
                     if ($PSCmdlet.ShouldProcess("Rename GPO '$($gpo.OldName)' to '$($gpo.NewName)'")) {
                         # Rename the GPO and suppress the host output
                         Rename-GPO -Name $OldGpo -TargetName $gpo.NewName | Out-Null
-                        Write-Output "[Rename-GPOsByCSV] $(Get-Date) [Success] Renamed GPO '$($gpo.OldName)' to '$($gpo.NewName)'."
+                        Write-Log -LogText "[Rename-GPOsByCSV] $(Get-Date) [Success] Renamed GPO '$($gpo.OldName)' to '$($gpo.NewName)'." -Output Both
                     }
                 }
                 catch {
-                    Write-Host "[Rename-GPOsByCSV] $(Get-Date) [Error] Failed to rename GPO '$($gpo.OldName)': $_"
+                    Write-Log -LogText "[Rename-GPOsByCSV] $(Get-Date) [Error] Failed to rename GPO '$($gpo.OldName)': $_" -Output Both
                 }
             }
 
             # Pause between batches to avoid overloading domain controller replication.
             if ($i + $BatchSize -lt $GPOs.Count) {
+                Write-Log -LogText "Pausing for $Delay seconds." -Output HostOnly
                 Start-Sleep -Seconds $Delay
             }
         }
