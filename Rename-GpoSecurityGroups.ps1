@@ -5,20 +5,25 @@ function Rename-GpoSecurityGroups {
     .DESCRIPTION
         Check the security filtering groups that are applied to group policy objects and rename them to align with the
         GPO name. This only performs the rename for groups that begin with the string "GPO".
+    .NOTES
+        [ ] Automatically rename security filtering groups applied to affected GPOs
+        [x] Rename if they begin with "GPO*"
+        [x] Log without renaming if the group name does not begin with "GPO*"
+        [x] Ignore groups with "Phase" in the name
     #>
     [CmdletBinding()]
     param (
         # Name of the GPO to find and rename groups for.
-        [Parameter(Mandatory = $false, Position = 0)]
+        [Parameter(Position = 0)]
         $GPO,
 
         # Skip GPOs that have these words anywhere in their name:
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [System.Collections.Generic.List[string]]
         $IgnoreWords = @(),
 
         # Switch to run in "report-only" mode.
-        [Parameter(Mandatory = $false)]
+        [Parameter()]
         [switch]
         $ReportOnly
     )
@@ -28,18 +33,18 @@ function Rename-GpoSecurityGroups {
         [System.Collections.Generic.List[string]]$DefaultIgnoreWords = @(
             'Authenticated Users','Domain Computers','Domain Controllers'
         )
-        Write-Verbose "Ignoring by default: $($DefaultIgnoreWords -join ', ')."
+        Write-Output "Ignoring by default: $($DefaultIgnoreWords -join ', ')."
         if ($IgnoreWords) {
-            Write-Verbose "Ignoring group names that include: $($IgnoreWords -join ', ')."
+            Write-Output "Ignoring group names that include: $($IgnoreWords -join ', ')."
         }
         $IgnoreWords.AddRange($DefaultIgnoreWords)
 
         # Get the GPO so we can check its security filtering groups:
         if ($GPO) {
-            Write-Verbose "Yes: $GPO"
+            Write-Verbose "Checking GPO named: $GPO"
             $GPOs = Get-Gpo $GPO
         } else {
-            Write-Verbose "No: $GPO"
+            Write-Verbose "Checking all GPOs."
             $GPOs = Get-GPO -All
         }
 
