@@ -1,21 +1,57 @@
 function Rename-GpoSecurityGroups {
     <#
-    .SYNOPSIS
+        .SYNOPSIS
         Rename the security groups used for filtering GPOs.
-    .DESCRIPTION
+
+        .DESCRIPTION
         Check the security filtering groups that are applied to group policy objects and rename them to align with the
         GPO name. This only performs the rename for groups that begin with the string "GPO".
-    .NOTES
-        [ ] Automatically rename security filtering groups applied to affected GPOs
+
+        .PARAMETER GPO
+        Name of the GPO to check for security filtering groups.
+
+        .PARAMETER IgnoreWords
+        Ignore security groups that have these words anywhere in their name. Not case-sensitive.
+
+        .PARAMETER RequiredPrefix
+        Only rename security groups that already begin with a specific prefix (eg: "GPO."). Not case-sensitive.
+
+        .PARAMETER ReportOnly
+        Only create a report of what would be renamed.
+
+        .PARAMETER LogFile
+        Path and filename to save logs in.
+
+        .EXAMPLE
+        Rename-GPOSecurityGroups -RequiredPrefix "GPO." -IgnoreWords "Phase"
+
+        Run the script; only rename security groups that already begin with the string "GPO."
+        and ignore any security groups that contain the word "Phase".
+
+        .EXAMPLE
+        Rename-GPOSecurityGroups -IgnoreWords @("Phase","AlsoIgnoreThis","And Ignore This")
+
+        Run the script and ignore any security groups that contain the any of the words in an array of words.
+
+        .NOTES
+        Author: Sam Erde
+        Version: 0.1.0
+        Modified: 2024-06-27
+
         [x] Rename if they begin with "GPO*"
         [x] Log without renaming if the group name does not begin with "GPO*"
-        [x] Ignore groups with "Phase" in the name
     #>
-    [CmdletBinding()]
+
+    [CmdletBinding( SupportsShouldProcess, ConfirmImpact = 'High' )]
     param (
         # Name of the GPO to find and rename groups for.
         [Parameter(Position = 0)]
         $GPO,
+
+        # Only rename security groups that already begin with a specific prefix.
+        [Parameter()]
+        [string]
+        $RequiredPrefix = 'GPO',
 
         # Skip GPOs that have these words anywhere in their name:
         [Parameter()]
@@ -25,7 +61,12 @@ function Rename-GpoSecurityGroups {
         # Switch to run in "report-only" mode.
         [Parameter()]
         [switch]
-        $ReportOnly
+        $ReportOnly,
+
+        # Log path and filename. A default name will be generated if none is provided.
+        [Parameter()]
+        [string]
+        $LogFile
     )
 
     begin {
