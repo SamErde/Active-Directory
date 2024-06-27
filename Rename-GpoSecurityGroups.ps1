@@ -70,17 +70,30 @@ function Rename-GpoSecurityGroups {
     )
 
     begin {
+        $StartTime = Get-Date
+
+        # Generate a log file name if one was not specified in the parameters.
+        if ( -not $PSBoundParameters.ContainsKey($LogFile) ) {
+            $LogFile = "Renaming GPO Security Filtering Groups {0}.txt" -f ($StartTime.ToString("yyyy-MM-dd HH_mm_ss"))
+        }
+
+        # Start the log string builder.
+        $LogStringBuilder = [System.Text.StringBuilder]::New()
+
+        Write-Log "Renaming GPO Security Filtering Groups"
+        Write-Log "$StartTime `n"
+
         # Initialize the list of strings include for ignoring group names:
         [System.Collections.Generic.List[string]]$DefaultIgnoreWords = @(
             'Authenticated Users','Domain Computers','Domain Controllers'
         )
-        Write-Output "Ignoring by default: $($DefaultIgnoreWords -join ', ')."
+        Write-Log -LogText "Ignoring by default: $($DefaultIgnoreWords -join ', ')." -Output Both
         if ($IgnoreWords) {
-            Write-Output "Ignoring group names that include: $($IgnoreWords -join ', ')."
+            Write-Log -LogText "Ignoring group names that include: $($IgnoreWords -join ', ')." -Output Both
         }
         $IgnoreWords.AddRange($DefaultIgnoreWords)
 
-        # Get the GPO so we can check its security filtering groups:
+        # Get the GPO (or all GPOs) so we can check their security filtering groups:
         if ($GPO) {
             Write-Verbose "Checking GPO named: $GPO"
             $GPOs = Get-Gpo $GPO
@@ -89,7 +102,7 @@ function Rename-GpoSecurityGroups {
             $GPOs = Get-GPO -All
         }
 
-        Write-Verbose "Inspecting $($GPOs.Count) GPOs."
+        Write-Log -LogText "`nInspecting $($GPOs.Count) GPOs.`n" -Output Both
     }
 
     process {
@@ -133,6 +146,47 @@ function Rename-GpoSecurityGroups {
     } # end process block
 
     end {
-        
+        # Write the log file
+        $FinishTime = Get-Date
+        Write-Log "`n`nFinished at $FinishTime.`n"
+        try {
+            $LogStringBuilder.ToString() | Out-File -FilePath $LogFile -Encoding utf8 -Force
+            Write-Output "The log file has been written to $LogFile."
+        } catch {
+            Write-Warning -Message "Unable to write to the logfile `'$LogFile`'."
+            $_
+        }
     } # end end block
 } # end function
+
+function Write-Log {
+    # Write a string of text to the host and a log file simultaneously.
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingWriteHost', '', Justification = 'Support using Write-Host and colors for interactive scripts.')]
+    [OutputType([string])]
+        param (
+            # The message to display and write to a log
+            [Parameter(Mandatory, Position = 0)]
+            [string]
+            $LogText,
+
+            # Type of output to send
+            [Parameter(Position = 1)]
+            [ValidateSet('Both','HostOnly','LogOnly')]
+            [string]
+            $Output = 'Both'
+        )
+
+    switch ($Output) {
+        Both {
+            Write-Host "$LogText"
+            [void]$LogStringBuilder.AppendLine($LogText)
+        }
+        HostOnly {
+            Write-Host "$LogText"
+        }
+        LogOnly {
+            [void]$LogStringBuilder.AppendLine($LogText)
+        }
+    } # end switch Output
+} # end function Write-Log
