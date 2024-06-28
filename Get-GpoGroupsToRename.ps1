@@ -16,22 +16,19 @@ function Get-GpoGroupsToRename {
         .PARAMETER RequiredPrefix
         Only rename security groups that already begin with a specific prefix (eg: "GPO."). Not case-sensitive.
 
-        .PARAMETER ReportOnly
-        Only create a report of what would be renamed.
-
         .PARAMETER LogFile
         Path and filename to save logs in.
 
         .EXAMPLE
         Rename-GPOSecurityGroups -RequiredPrefix "GPO." -IgnoreWords "Phase"
 
-        Run the script; only rename security groups that already begin with the string "GPO."
-        and ignore any security groups that contain the word "Phase".
+        Run the script; only target security groups that already begin with the string "GPO." and
+        ignore any security groups that contain the word "Phase".
 
         .EXAMPLE
         Rename-GPOSecurityGroups -IgnoreWords @("Phase","AlsoIgnoreThis","And Ignore This")
 
-        Run the script and ignore any security groups that contain the any of the words in an array of words.
+        Run the script and ignore any security groups that contain any string from the provided array.
 
         .NOTES
         Author: Sam Erde
@@ -150,8 +147,6 @@ function Get-GpoGroupsToRename {
                 }) | Out-Null
 
                 Write-Log -LogText "`n$(Get-Date) [Mismatch] $GpoName`n`t`tGroup: $GroupName`n`t`tNew Group: $NewGroupName`n" -Output Both
-                #$Group = Get-ADGroup $GroupName
-                #Set-ADGroup -WhatIf -Identity $Group -DisplayName $NewGroupName -SamAccountName $NewGroupName
             } #end foreach ace
         } # end foreach gpo
     } # end process block
