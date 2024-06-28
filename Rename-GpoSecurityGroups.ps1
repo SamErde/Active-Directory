@@ -1,4 +1,4 @@
-function Rename-GpoSecurityGroups {
+function Get-GpoGroupsToRename {
     <#
         .SYNOPSIS
         Rename the security groups used for filtering GPOs.
@@ -36,10 +36,7 @@ function Rename-GpoSecurityGroups {
         .NOTES
         Author: Sam Erde
         Version: 0.1.0
-        Modified: 2024-06-27
-
-        [x] Rename if they begin with "GPO*"
-        [x] Log without renaming if the group name does not begin with "GPO*"
+        Modified: 2024-06-28
     #>
 
     [CmdletBinding( SupportsShouldProcess, ConfirmImpact = 'High' )]
@@ -77,6 +74,11 @@ function Rename-GpoSecurityGroups {
             $LogFile = "Renaming GPO Security Filtering Groups {0}.txt" -f ($StartTime.ToString("yyyy-MM-dd HH_mm_ss"))
         }
 
+        # Set a name for the exported CSV file is one is not specified.
+        if (-not $PSBoundParameters.ContainsKey($CsvFile) ) {
+            $GroupsToRenameCsvFile = ".\Groups to Rename {0}.csv" -f ($StartTime.ToString("yyyy-MM-dd HH_mm_ss"))
+        }
+
         # Start the log string builder.
         $LogStringBuilder = [System.Text.StringBuilder]::New()
 
@@ -104,6 +106,7 @@ function Rename-GpoSecurityGroups {
         $GpoCount = $Gpos.Count
 
         Write-Log -LogText "`nInspecting $GpoCount GPOs.`n" -Output Both
+
     } # end begin block
 
     process {
@@ -146,7 +149,7 @@ function Rename-GpoSecurityGroups {
                     NewGroupName = $NewGroupName
                 }) | Out-Null
 
-                Write-Log -LogText "$(Get-Date) [Mismatch] $GpoName`n`t`tGroup: $GroupName`n`t`tNew Group: $NewGroupName" -Output Both
+                Write-Log -LogText "`n$(Get-Date) [Mismatch] $GpoName`n`t`tGroup: $GroupName`n`t`tNew Group: $NewGroupName`n" -Output Both
                 #$Group = Get-ADGroup $GroupName
                 #Set-ADGroup -WhatIf -Identity $Group -DisplayName $NewGroupName -SamAccountName $NewGroupName
             } #end foreach ace
@@ -154,6 +157,14 @@ function Rename-GpoSecurityGroups {
     } # end process block
 
     end {
+        # Create the CSV file of groups to rename.
+        try {
+            $GroupsToRename | ConvertTo-Csv -NoTypeInformation -Delimiter ';' | Out-File -FilePath $GroupsToRenameCsvFile
+            Write-Log -LogText "A table of the potential changes has been written to `'$GroupsToRenameCsvFile`'." -Output Both
+        } catch {
+            Write-Log -LogText "Failed to create `'$GroupsToRenameCsvFile`'.`n$_"
+        }
+
         # Write the log file
         $FinishTime = Get-Date
         Write-Log "`n`nFinished reviewing $GpoCount at $FinishTime." -Output Both
